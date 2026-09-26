@@ -3,7 +3,7 @@
 **Hand tasks to Claude from Todoist. Claude Code does the work on your computer. The results come back to Todoist.**
 
 <p align="center">
-  <img src="docs/how-it-works.svg" alt="1. Delegate: label a Todoist task @claude. 2. Run: /todoist-agent:run, and Claude Code does the work in the task's project folder. 3. Review: the result comes back as a comment on the task, labeled for you." width="100%">
+  <img src="docs/how-it-works.svg" alt="Three work tasks are delegated in Todoist with @claude. /todoist-agent:run starts three Claude Code workers in parallel that read Granola, Slack, Gmail, the web, Google Drive, and a git repo. Each result comes back to Todoist as a review comment, labeled for you." width="100%">
 </p>
 
 Todoist is where you hand off and review. Claude Code does the work, on your machine, with your own Claude plan. There's no server, no API key, and nothing to host.
@@ -15,12 +15,22 @@ Todoist is where you hand off and review. Claude Code does the work, on your mac
 In Claude Code:
 
 ```
-/todoist-agent:delegate Compare standing desks under $500 with a crossbar
+/todoist-agent:delegate Draft the follow-up from today's Acme kickoff call, from the Granola notes and #acme Slack
 ```
 
 Claude turns that into a clear Todoist task (goal, what "done" means, which project folder), labels it `@claude`, and asks you if anything's unclear.
 
 **Or skip Claude Code entirely:** add the `@claude` label to any task in Todoist, from your phone or anywhere.
+
+**What to hand off.** Anything that ends in a file or a branch you can review:
+
+| Task | Claude reads | You get back |
+|---|---|---|
+| Follow up on the Acme kickoff call | Granola notes, Slack, Gmail | An email draft and action items with owners |
+| Compare 3 vector DBs for our search feature | The web, your Google Drive docs | A comparison with pricing, tradeoffs, and a pick |
+| Fix the flaky checkout test | The repo and its tests | A `claude/…` branch with the fix, tests passing |
+| Prep me for Thursday's QBR with Globex | Past meeting notes, Slack, Drive | A one-page brief: open issues, asks, talking points |
+| Weekly status for the platform team | This week's Slack threads and meetings | A status update, ready to paste |
 
 ### 2. Run: Claude Code does the work
 
@@ -114,12 +124,12 @@ Labels show whose turn it is: `@claude` (queued), `@claude-working` (a run has i
 ### The delegation template
 
 ```
-**Goal:** Compare standing desks under $500 for a small home office.
-**Done when:** A markdown table of the top 3 with prices, links, and a recommendation.
-**Folder:** /Users/me/projects/home-office   (or just home-office, under a root)
-**Context:** Needs a crossbar. See the #home-office Slack thread from last week.
-**Stop before:** Don't buy anything.     (optional)
-**Model:** sonnet                        (optional; default Opus, high effort)
+**Goal:** Draft the follow-up to Acme after today's kickoff call.
+**Done when:** An email draft to their team, plus a list of action items with owners and dates.
+**Folder:** /Users/me/Projects/acme-onboarding   (or just acme-onboarding, under a root)
+**Context:** Granola notes from "Acme kickoff" today. Pricing questions came up in #acme-deal on Slack.
+**Stop before:** Draft only, don't send.         (optional)
+**Model:** sonnet                                (optional; default Opus, high effort)
 ```
 
 The delegate skill always fills it in, including the folder: it matches the task to an existing project folder or proposes a new one. Tasks you write by hand don't have to follow it. A worker scopes whatever it gets, and if the task isn't clear enough it hands the task back with specific questions.
