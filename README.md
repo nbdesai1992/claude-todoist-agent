@@ -1,4 +1,4 @@
-# claude-todoist-agent
+# Relay
 
 **Hand tasks to Claude from Todoist. Claude Code does the work on your computer. The results come back to Todoist.**
 
@@ -7,6 +7,8 @@
 </p>
 
 Todoist is where you hand off and review. Claude Code does the work, on your machine, with your own Claude plan. There's no server, no API key, and nothing to host.
+
+<sub>Relay is the new name for Todoist Agent. Its commands keep the `/todoist-agent:` prefix for now, so everything below works as written.</sub>
 
 ## Three steps
 
@@ -84,7 +86,7 @@ Then in Claude Code: `/mcp` → **todoist** → **Authenticate**, and approve in
 **3. Install this plugin** inside Claude Code, then restart it:
 
 ```
-/plugin marketplace add nbdesai1992/claude-todoist-agent
+/plugin marketplace add nbdesai1992/relay
 /plugin install todoist-agent@claude-todoist-agent
 ```
 

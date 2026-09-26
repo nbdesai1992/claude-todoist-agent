@@ -1,10 +1,10 @@
 ---
 name: setup
-description: One-time setup for the Todoist agent. Checks the Todoist connection, creates the two turn labels, writes the config file, and checks the approval rules. Use when the user wants to set up or repair the Todoist agent, or when another todoist-agent skill reports it isn't set up.
+description: One-time setup for Relay (the Todoist agent). Checks the Todoist connection, creates the two turn labels, writes the config file, and checks the approval rules. Use when the user wants to set up or repair Relay (the Todoist agent), or when another todoist-agent skill reports it isn't set up.
 disable-model-invocation: true
 ---
 
-# Set up the Todoist agent
+# Set up Relay
 
 Do each step, say what you found in a line, and fix what's missing. Ask before changing anything the user already has.
 
