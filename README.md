@@ -1,130 +1,115 @@
 # claude-todoist-agent
 
-**Hand tasks to Claude in Todoist. Claude does them in the right project folder. You review what comes back.**
+**Hand tasks to Claude from Todoist. Claude Code does the work on your computer. The results come back to Todoist.**
 
-## What this is
+<p align="center">
+  <img src="docs/how-it-works.svg" alt="1. Delegate: label a Todoist task @claude. 2. Run: /todoist-agent:run, and Claude Code does the work in the task's project folder. 3. Review: the result comes back as a comment on the task, labeled for you." width="100%">
+</p>
 
-A **Claude Code plugin**: a small bundle of instructions and a safety check that you install into Claude Code. That's all. There's no server, no API key, and nothing to host.
+Todoist is where you hand off and review. Claude Code does the work, on your machine, with your own Claude plan. There's no server, no API key, and nothing to host.
 
-It connects two things you already have:
+## Three steps
 
-| You bring | What it's for |
-|---|---|
-| **Todoist** (your account) | Where you hand off tasks and read results. Claude reaches it through Todoist's official MCP connector. |
-| **Claude Code** (your Claude subscription: Pro, Max, Team, or Enterprise) | Does the work, on your computer, under your login. Runs use your plan's normal usage. |
+### 1. Delegate: put the task on Claude's turn
 
-**What the plugin adds:**
+In Claude Code:
 
-| Piece | What it does |
-|---|---|
-| `/todoist-agent:setup` | One-time setup: labels, config, approval rules. |
-| `/todoist-agent:delegate` | Turns a request into a clear Todoist task for Claude. |
-| `/todoist-agent:run` | Works every task labeled `@claude` and posts the results back. |
-| `/todoist-agent:review` | Walks you through what came back. |
-| Worker agent | Does a single task. It can read your connected tools (Slack, Drive, email, meeting notes…) and write files in the project folder, but can't touch Todoist. |
-| Guard | A safety check that stops the worker from sending, sharing, deleting, completing, or pushing anything. |
+```
+/todoist-agent:delegate Compare standing desks under $500 with a crossbar
+```
 
-Nothing runs in the background. Work only happens when you type `/todoist-agent:run`.
+Claude turns that into a clear Todoist task (goal, what "done" means, which project folder), labels it `@claude`, and asks you if anything's unclear.
 
-## Setup (once, about 10 minutes)
+**Or skip Claude Code entirely:** add the `@claude` label to any task in Todoist, from your phone or anywhere.
 
-**1. Install Claude Code and sign in** with your Claude account: see [code.claude.com](https://code.claude.com). Run `claude` in a terminal and follow the login. You also need `python3` (for the safety check; macOS and most Linux have it) and `git` (for code tasks).
+### 2. Run: Claude Code does the work
 
-**2. Connect Todoist.** In a terminal:
+```
+/todoist-agent:run
+```
+
+Start Claude Code in your projects folder, type this, and walk away.
+
+- Every `@claude` task gets its own worker, all at the same time.
+- Each worker works in the task's project folder and saves its files there. Code goes on a `claude/…` branch, never your working copy.
+- It can read the tools you've connected to Claude Code (web, Slack, Drive, email, meeting notes) for context.
+
+<sub>Want to preview first? `/todoist-agent:run --dry-run` shows the plan and changes nothing. `/todoist-agent:run <task>` runs just one. If a run gets interrupted, the next one offers to requeue what it left behind.</sub>
+
+### 3. Review: back in Todoist
+
+Each task now has a comment from Claude and your label. Read it in the Todoist app, or go through them all with:
+
+```
+/todoist-agent:review
+```
+
+| Comment | Meaning | You |
+|---|---|---|
+| ✅ Ready for review | Done | Open the files it links to. |
+| 🟡 Partly done | Some left | See "Your next steps". |
+| ❓ Needs your input | Blocked | Answer its questions. |
+
+Then either:
+- **Send it back:** comment with feedback and switch the label to `@claude`. The next run builds on the same files.
+- **Keep it:** it's yours now. Nothing to do.
+- **Complete it:** you complete the task. Claude never does.
+
+> **Claude never sends, posts, shares, deletes, completes, or pushes anything.** It leaves you files, drafts, and branches to act on. A built-in guard enforces this, even in bypass mode.
+
+## Set up once (about 10 minutes)
+
+You need a **Todoist** account and **Claude Code** signed in with your Claude plan (Pro, Max, Team, or Enterprise). Also `python3` and `git`, which macOS and most Linux already have.
+
+**1. Install Claude Code** from [code.claude.com](https://code.claude.com). Run `claude` in a terminal and sign in.
+
+**2. Connect Todoist** to Claude Code. This uses Todoist's official connector:
 
 ```bash
 claude mcp add --transport http --scope user todoist https://ai.todoist.net/mcp
 ```
 
-Then start `claude`, type `/mcp`, pick **todoist**, choose **Authenticate**, and approve in the browser. (If you've already added Todoist as a connector on claude.ai, that works too. Skip this step.)
+Then in Claude Code: `/mcp` → **todoist** → **Authenticate**, and approve in the browser. (Already connected Todoist on claude.ai? That works too; skip this step.)
 
-**3. Install the plugin.** Inside Claude Code:
+**3. Install this plugin** inside Claude Code, then restart it:
 
 ```
 /plugin marketplace add nbdesai1992/claude-todoist-agent
 /plugin install todoist-agent@claude-todoist-agent
 ```
 
-Restart Claude Code (`/exit`, then `claude`).
-
-**4. Run setup.** Inside Claude Code:
+**4. Run setup:**
 
 ```
 /todoist-agent:setup
 ```
 
-It checks Todoist, then asks two things:
-- **Your label:** the label for tasks on your turn. Your first name works, e.g. `@sam`.
-- **Your projects folder:** the folder that holds one subfolder per project, e.g. `~/Projects`. Claude puts each task's files in the right subfolder.
+It asks for two things:
+- **Your label**, e.g. `@sam`. Tasks come back to you under it.
+- **Your projects folder**, e.g. `~/Projects`, the folder with one subfolder per project.
 
-Then it creates the labels `@claude`, `@claude-working`, and yours in Todoist, and writes `~/.config/todoist-agent/config.toml`. It also offers approval prompts for risky Todoist actions (delete, complete), so those always ask you first.
+It then creates the `@claude`, `@claude-working`, and your labels in Todoist, saves your settings, and offers approval prompts for risky Todoist actions.
 
-**5. (Optional) Teach Claude your projects.** Add a `CLAUDE.md` to any project folder saying how work there should be done: sources to check, house style, where drafts go. Connect other tools in Claude Code (Slack, Google Drive, Gmail, meeting notes) and the workers can read them for context.
+**Done.** Try step 1 above.
 
-**6. Try it:**
+<sub>**Optional:** put a `CLAUDE.md` in a project folder to tell Claude how work there should be done (sources, style, where drafts go). **Updating:** `claude plugin marketplace update claude-todoist-agent && claude plugin update todoist-agent@claude-todoist-agent`, then restart.</sub>
 
-```
-/todoist-agent:delegate Find 3 highly rated standing desks under $500. Done when there's a comparison table with prices and links.
-/todoist-agent:run
-```
+## What's inside
 
-Then open the task in Todoist and read Claude's comment.
+A Claude Code plugin, made of:
 
-**Updating:** in a terminal, `claude plugin marketplace update claude-todoist-agent && claude plugin update todoist-agent@claude-todoist-agent`, then restart Claude Code.
-
-## Daily use (your part)
-
-You only ever do three things. A label on each task shows whose turn it is.
-
-### 1. Hand it off → `@claude`
-
-Pick either way:
-- **In Todoist** (phone, desktop, anywhere): add the `@claude` label to a task.
-- **In Claude Code:** `/todoist-agent:delegate <what you want>`. Claude writes a clear brief (goal, what "done" looks like, which project folder) and asks you if anything's unclear.
-
-The more specific the task, the better the first result. Say which project it belongs to, or Claude will ask.
-
-### 2. Run the queue → `/todoist-agent:run`
-
-Open Claude Code **in your projects folder** and type `/todoist-agent:run`. Then walk away.
-
-- Claude works every `@claude` task at the same time, each in its own project folder.
-- Files land in that project folder. Code lands on a `claude/…` branch, never on your working copy.
-- When it's done, each task has a comment with the result, and its label is back to **you**.
-
-### 3. Review → your label
-
-Open the task in Todoist (or run `/todoist-agent:review`). The comment starts with one of:
-
-| | Meaning | What you do |
-|---|---|---|
-| ✅ | Ready for review | Check the files it links to. |
-| 🟡 | Partly done | See what's left under "Your next steps". |
-| ❓ | Needs your input | Answer its questions (often: which folder?). |
-
-Then pick one:
-- **Send it back:** reply in a comment, then switch the label to `@claude`. The next run picks it up and builds on the same files.
-- **Keep it:** do nothing. It's on your plate now.
-- **Done:** complete the task, in Todoist or by choosing "Complete it" in `/todoist-agent:review`. Claude never completes a task on its own.
-
-```
-   you: label @claude  ──►  you: /todoist-agent:run  ──►  you: review the comment
-        (or /delegate)        Claude works, in the        ✅ 🟡 ❓
-                              project folder              │
-                                                          ├─ send back → @claude (loop)
-                                                          ├─ keep it
-                                                          └─ complete it
-```
-
-**What Claude will never do:** send, post, share, delete, complete, or push anything. It reads your Slack, meeting notes, docs, email, and the web, and leaves you files, drafts, and branches to act on. A guard enforces this, even in bypass mode.
-
-## Commands
-
-| | |
+| Piece | What it does |
 |---|---|
-| **Delegate** | `/todoist-agent:delegate <what>` writes a task in the template and labels it `@claude`. Or add `@claude` to any task yourself, from your phone or anywhere. Other agents can delegate too: see [docs/delegation-template.md](docs/delegation-template.md). |
-| **Run** | `/todoist-agent:run` works the whole queue. Use `/todoist-agent:run <task>` for one task, or `--dry-run` to see the plan without running anything. The run claims each task (`@claude` → `@claude-working`) before starting it, so a second run skips it. If a run dies, the next run lists the leftover `@claude-working` tasks and offers to requeue them. |
-| **Review** | `/todoist-agent:review` goes through what came back. Or review in the Todoist app: reply in a comment and switch the label back to `@claude` to send a task back. |
+| `/todoist-agent:setup` | One-time setup: labels, settings, approval prompts. |
+| `/todoist-agent:delegate` | Turns a request into a clear task labeled `@claude`. |
+| `/todoist-agent:run` | Works the `@claude` queue and posts each result back. |
+| `/todoist-agent:review` | Walks you through what came back. |
+| Worker agent | Does a single task. Reads your tools, writes files in the project folder. No Todoist access. |
+| Guard | Blocks the worker from sending, sharing, deleting, completing, or pushing. |
+
+Labels show whose turn it is: `@claude` (queued), `@claude-working` (a run has it), and yours. Other AI agents with Todoist access can delegate too: see [docs/delegation-template.md](docs/delegation-template.md).
+
+## Reference
 
 ### The delegation template
 
@@ -218,6 +203,7 @@ plugins/todoist-agent/
   agents/worker.md                       the worker subagent: scope, do, report
   hooks/hooks.json, scripts/guard.py     worker guardrails
 docs/delegation-template.md              instructions to paste into other agents
+docs/how-it-works.svg                    the animated diagram above
 tests/test_guard.py                      python3 -m unittest discover -s tests
 ```
 
