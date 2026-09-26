@@ -22,15 +22,15 @@
     .bar     { animation-name: bar; transform-box: fill-box; transform-origin: left center; }
     .comment { animation-name: comment; }
 
-    @keyframes task    { 0% { opacity: 0 } 4%, 95% { opacity: 1 } 98%, 100% { opacity: 0 } }
-    @keyframes pill1   { 0% { opacity: 0 } 4%, 29% { opacity: 1 } 32%, 100% { opacity: 0 } }
+    @keyframes task    { 0%, 95% { opacity: 1 } 97%, 98% { opacity: 0 } 100% { opacity: 1 } }
+    @keyframes pill1   { 0%, 29% { opacity: 1 } 32%, 98% { opacity: 0 } 100% { opacity: 1 } }
     @keyframes pill2   { 0%, 29% { opacity: 0 } 32%, 66% { opacity: 1 } 69%, 100% { opacity: 0 } }
-    @keyframes pill3   { 0%, 66% { opacity: 0 } 69%, 95% { opacity: 1 } 98%, 100% { opacity: 0 } }
+    @keyframes pill3   { 0%, 66% { opacity: 0 } 69%, 95% { opacity: 1 } 97%, 100% { opacity: 0 } }
     @keyframes dotTop  { 0%, 25% { opacity: 0; transform: translateX(0) } 26% { opacity: 1; transform: translateX(0) }
                          33% { opacity: 1; transform: translateX(112px) } 34%, 100% { opacity: 0; transform: translateX(112px) } }
     @keyframes dotBot  { 0%, 65% { opacity: 0; transform: translateX(0) } 66% { opacity: 1; transform: translateX(0) }
                          72% { opacity: 1; transform: translateX(-112px) } 73%, 100% { opacity: 0; transform: translateX(-112px) } }
-    @keyframes term    { 0%, 95% { opacity: 1 } 98%, 100% { opacity: 0 } }
+    @keyframes term    { 0%, 95% { opacity: 1 } 97%, 99% { opacity: 0 } 100% { opacity: 1 } }
     @keyframes cover   { 0%, 34% { transform: translateX(0) } 42%, 98% { transform: translateX(180px) } 99%, 100% { transform: translateX(0) } }
     @keyframes l2      { 0%, 42% { opacity: 0 } 44%, 100% { opacity: 1 } }
     @keyframes l3      { 0%, 45% { opacity: 0 } 47%, 100% { opacity: 1 } }
@@ -38,7 +38,7 @@
     @keyframes l4      { 0%, 60% { opacity: 0 } 62%, 100% { opacity: 1 } }
     @keyframes l5      { 0%, 63% { opacity: 0 } 65%, 100% { opacity: 1 } }
     @keyframes comment { 0%, 71% { opacity: 0; transform: translateY(8px) } 74%, 95% { opacity: 1; transform: translateY(0) }
-                         98%, 100% { opacity: 0; transform: translateY(0) } }
+                         97%, 100% { opacity: 0; transform: translateY(0) } }
   </style>
 
   <!-- card -->
