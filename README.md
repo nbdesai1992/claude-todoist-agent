@@ -3,12 +3,10 @@
 **Hand tasks to Claude from Todoist. Claude Code does the work on your computer. The results come back to Todoist.**
 
 <p align="center">
-  <img src="docs/how-it-works.svg" alt="Three work tasks are delegated in Todoist with @claude. /todoist-agent:run starts three Claude Code workers in parallel that read Granola, Slack, Gmail, the web, Google Drive, and a git repo. Each result comes back to Todoist as a review comment, labeled for you." width="100%">
+  <img src="docs/how-it-works.svg" alt="Three work tasks are delegated in Todoist with @claude. /relay:run starts three Claude Code workers in parallel that read Granola, Slack, Gmail, the web, Google Drive, and a git repo. Each result comes back to Todoist as a review comment, labeled for you." width="100%">
 </p>
 
 Todoist is where you hand off and review. Claude Code does the work, on your machine, with your own Claude plan. There's no server, no API key, and nothing to host.
-
-<sub>Relay is the new name for Todoist Agent. Its commands keep the `/todoist-agent:` prefix for now, so everything below works as written.</sub>
 
 ## Three steps
 
@@ -17,7 +15,7 @@ Todoist is where you hand off and review. Claude Code does the work, on your mac
 In Claude Code:
 
 ```
-/todoist-agent:delegate Draft the follow-up from today's Acme kickoff call, from the Granola notes and #acme Slack
+/relay:delegate Draft the follow-up from today's Acme kickoff call, from the Granola notes and #acme Slack
 ```
 
 Claude turns that into a clear Todoist task (goal, what "done" means, which project folder), labels it `@claude`, and asks you if anything's unclear.
@@ -37,7 +35,7 @@ Claude turns that into a clear Todoist task (goal, what "done" means, which proj
 ### 2. Run: Claude Code does the work
 
 ```
-/todoist-agent:run
+/relay:run
 ```
 
 Start Claude Code in your projects folder, type this, and walk away.
@@ -46,14 +44,14 @@ Start Claude Code in your projects folder, type this, and walk away.
 - Each worker works in the task's project folder and saves its files there. Code goes on a `claude/…` branch, never your working copy.
 - It can read the tools you've connected to Claude Code (web, Slack, Drive, email, meeting notes) for context.
 
-<sub>Want to preview first? `/todoist-agent:run --dry-run` shows the plan and changes nothing. `/todoist-agent:run <task>` runs just one. If a run gets interrupted, the next one offers to requeue what it left behind.</sub>
+<sub>Want to preview first? `/relay:run --dry-run` shows the plan and changes nothing. `/relay:run <task>` runs just one. If a run gets interrupted, the next one offers to requeue what it left behind.</sub>
 
 ### 3. Review: back in Todoist
 
 Each task now has a comment from Claude and your label. Read it in the Todoist app, or go through them all with:
 
 ```
-/todoist-agent:review
+/relay:review
 ```
 
 | Comment | Meaning | You |
@@ -87,13 +85,13 @@ Then in Claude Code: `/mcp` → **todoist** → **Authenticate**, and approve in
 
 ```
 /plugin marketplace add nbdesai1992/relay
-/plugin install todoist-agent@claude-todoist-agent
+/plugin install relay@relay
 ```
 
 **4. Run setup:**
 
 ```
-/todoist-agent:setup
+/relay:setup
 ```
 
 It asks for two things:
@@ -104,7 +102,22 @@ It then creates the `@claude`, `@claude-working`, and your labels in Todoist, sa
 
 **Done.** Try step 1 above.
 
-<sub>**Optional:** put a `CLAUDE.md` in a project folder to tell Claude how work there should be done (sources, style, where drafts go). **Updating:** `claude plugin marketplace update claude-todoist-agent && claude plugin update todoist-agent@claude-todoist-agent`, then restart.</sub>
+<sub>**Optional:** put a `CLAUDE.md` in a project folder to tell Claude how work there should be done (sources, style, where drafts go). **Updating:** `claude plugin marketplace update relay && claude plugin update relay@relay`, then restart.</sub>
+
+### Upgrading from Todoist Agent (v0.4.x)
+
+Relay used to be called Todoist Agent. The plugin id changed, so reinstall it once inside Claude Code:
+
+```
+/plugin uninstall todoist-agent@claude-todoist-agent
+/plugin marketplace remove claude-todoist-agent
+/plugin marketplace add nbdesai1992/relay
+/plugin install relay@relay
+```
+
+Then restart Claude Code. Commands are now `/relay:setup`, `/relay:delegate`, `/relay:run`, and `/relay:review`.
+
+Your settings carry over. Relay reads `~/.config/todoist-agent/config.toml` when `~/.config/relay/config.toml` doesn't exist, and `/relay:setup` offers to move it. New git worktrees go to `~/relay`. To keep using your old ones, set `folders.workspace = "~/todoist-agent"`. Your Todoist labels don't change.
 
 ## What's inside
 
@@ -112,10 +125,10 @@ A Claude Code plugin, made of:
 
 | Piece | What it does |
 |---|---|
-| `/todoist-agent:setup` | One-time setup: labels, settings, approval prompts. |
-| `/todoist-agent:delegate` | Turns a request into a clear task labeled `@claude`. |
-| `/todoist-agent:run` | Works the `@claude` queue and posts each result back. |
-| `/todoist-agent:review` | Walks you through what came back. |
+| `/relay:setup` | One-time setup: labels, settings, approval prompts. |
+| `/relay:delegate` | Turns a request into a clear task labeled `@claude`. |
+| `/relay:run` | Works the `@claude` queue and posts each result back. |
+| `/relay:review` | Walks you through what came back. |
 | Worker agent | Does a single task. Reads your tools, writes files in the project folder. No Todoist access. |
 | Guard | Blocks the worker from sending, sharing, deleting, completing, or pushing. |
 
@@ -156,16 +169,16 @@ Every task runs in a **work folder**, and its files land there, next to the rest
 
 A `Folder:` that doesn't exist yet but sits directly inside a root is a new project, and the run creates it. **Put a `CLAUDE.md` in a project folder to tell workers how tasks there should be done**: which sources to check, the house style, where outputs go, how to run tests.
 
-If the work folder is a git repository, the worker leaves your checkout alone. It creates a worktree at `~/todoist-agent/<task-id>-<slug>/worktree` on a `claude/<task-id>-<slug>` branch, commits there, and never pushes. That's the only thing `folders.workspace` is for.
+If the work folder is a git repository, the worker leaves your checkout alone. It creates a worktree at `~/relay/<task-id>-<slug>/worktree` on a `claude/<task-id>-<slug>` branch, commits there, and never pushes. That's the only thing `folders.workspace` is for.
 
 ## Safety
 
-- **Workers:** a PreToolUse hook (`plugins/todoist-agent/scripts/guard.py`) acts only on calls from the worker subagent. Outside systems are read-only:
+- **Workers:** a PreToolUse hook (`plugins/relay/scripts/guard.py`) acts only on calls from the worker subagent. Outside systems are read-only:
   - **MCP tools run only if they're clearly reads** (get, list, search, read, query…). Anything else is denied, including drafts and tool names it can't classify.
   - **Send, share, post, schedule, delete, trash, archive, and complete** stay denied on every server, even for tools you allow.
   - **Every Todoist tool** is denied, since the dispatcher owns Todoist.
   - **Shell commands** that push (`git push`), discard work (destructive git), write through `gh` or `curl`, publish packages, or use `ssh` or `sudo` are denied.
-  - **Settings:** edits to `~/.claude/` and the todoist-agent config are denied.
+  - **Settings:** edits to `~/.claude/` and the Relay config are denied.
 
   Hook denials apply even in bypass-permissions mode. The worker's `disallowedTools` also removes Todoist and messaging tools up front.
 - **The run step** only swaps labels and posts one comment per task.
@@ -178,7 +191,7 @@ Workers run in your Claude Code session and inherit its working directory and pe
 
 ## Configuration
 
-`~/.config/todoist-agent/config.toml`. Every key is optional.
+`~/.config/relay/config.toml`. Every key is optional. If only the old `~/.config/todoist-agent/config.toml` exists, Relay reads that.
 
 ```toml
 [labels]
@@ -188,7 +201,7 @@ working = "claude-working"   # claimed by a run, in progress
 
 [folders]
 roots = []                              # folders whose subfolders are projects, e.g. ["~/Projects"]
-workspace = "~/todoist-agent"          # git worktrees live here
+workspace = "~/relay"                  # git worktrees live here
 
 [folders.projects]                      # Todoist project → work folder (overrides roots)
 # "Side project" = "~/code/side-project"
@@ -210,7 +223,7 @@ allow_tools = []  # exceptions to read-only, e.g. ["mcp__claude_ai_Gmail__create
 ## Layout
 
 ```
-plugins/todoist-agent/
+plugins/relay/
   skills/delegate  run  review  setup    the workflow, as Claude Code skills
   agents/worker.md                       the worker subagent: scope, do, report
   hooks/hooks.json, scripts/guard.py     worker guardrails
@@ -221,7 +234,7 @@ tests/test_guard.py                      python3 -m unittest discover -s tests
 
 ## Roadmap
 
-- **Scheduled runs:** the run step is a plain skill, so a schedule is `claude -p "/todoist-agent:run"` on cron or launchd. That comes after manual runs have proven themselves.
+- **Scheduled runs:** the run step is a plain skill, so a schedule is `claude -p "/relay:run"` on cron or launchd. That comes after manual runs have proven themselves.
 
 ## License
 

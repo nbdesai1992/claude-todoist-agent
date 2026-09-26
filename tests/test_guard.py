@@ -3,13 +3,14 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 
-GUARD = os.path.join(os.path.dirname(__file__), "..", "plugins", "todoist-agent", "scripts", "guard.py")
+GUARD = os.path.join(os.path.dirname(__file__), "..", "plugins", "relay", "scripts", "guard.py")
 sys.path.insert(0, os.path.dirname(GUARD))
 import guard  # noqa: E402
 
-WORKER = "todoist-agent:worker"
+WORKER = "relay:worker"
 
 
 def call(tool, agent=WORKER, **tool_input):
@@ -26,6 +27,12 @@ class OnlyTheWorker(unittest.TestCase):
 
     def test_other_subagents_untouched(self):
         self.assertIsNone(call("mcp__claude_ai_Gmail__send_message", agent="Explore"))
+
+    def test_worker_id_is_relay(self):
+        self.assertEqual(guard.WORKER, "relay:worker")
+        self.assertIsNotNone(call("Bash", agent="relay:worker", command="git push"))
+        # The pre-0.5 id no longer exists, so it's just another subagent.
+        self.assertIsNone(call("Bash", agent="todoist-agent:worker", command="git push"))
 
 
 class McpTools(unittest.TestCase):
@@ -104,8 +111,51 @@ class Builtins(unittest.TestCase):
 
     def test_settings_protected(self):
         self.assertIsNotNone(call("Write", file_path="~/.claude/settings.json"))
-        self.assertIsNotNone(call("Edit", file_path=os.path.expanduser("~/.config/todoist-agent/config.toml")))
-        self.assertIsNone(call("Write", file_path=os.path.expanduser("~/todoist-agent/1-x/notes.md")))
+        self.assertIsNone(call("Write", file_path=os.path.expanduser("~/relay/1-x/notes.md")))
+
+    def test_both_config_dirs_protected(self):
+        for path in ("~/.config/relay/config.toml", "~/.config/todoist-agent/config.toml"):
+            self.assertIsNotNone(call("Edit", file_path=os.path.expanduser(path)), path)
+            self.assertIsNotNone(call("Write", file_path=path), path)
+
+
+class ConfigPath(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.new = os.path.join(self.tmp.name, "relay", "config.toml")
+        self.old = os.path.join(self.tmp.name, "todoist-agent", "config.toml")
+        self.saved = guard.CONFIG, guard.LEGACY_CONFIG
+        guard.CONFIG, guard.LEGACY_CONFIG = self.new, self.old
+
+    def tearDown(self):
+        guard.CONFIG, guard.LEGACY_CONFIG = self.saved
+        self.tmp.cleanup()
+
+    def write(self, path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            f.write('[worker]\nallow_tools = ["mcp__x__create_thing"]\n')
+
+    def test_default_paths(self):
+        self.assertEqual(self.saved[0], os.path.expanduser("~/.config/relay/config.toml"))
+        self.assertEqual(self.saved[1], os.path.expanduser("~/.config/todoist-agent/config.toml"))
+
+    def test_falls_back_to_old_path_when_only_it_exists(self):
+        self.write(self.old)
+        self.assertEqual(guard.config_path(), self.old)
+
+    def test_new_path_wins_when_both_exist(self):
+        self.write(self.old)
+        self.write(self.new)
+        self.assertEqual(guard.config_path(), self.new)
+
+    def test_new_path_when_neither_exists(self):
+        self.assertEqual(guard.config_path(), self.new)
+
+    @unittest.skipIf(sys.version_info < (3, 11), "allow_tools needs tomllib (Python 3.11+)")
+    def test_allow_list_read_from_old_path(self):
+        self.write(self.old)
+        self.assertEqual(guard.allow_list(), ["mcp__x__create_thing"])
 
 
 class Bash(unittest.TestCase):
@@ -148,7 +198,7 @@ class Bash(unittest.TestCase):
                     "cat draft-mail.md",
                     "grep -r email src/",
                     "python3 -m pytest",
-                    "mkdir -p ~/todoist-agent/1-x"):
+                    "mkdir -p ~/relay/1-x"):
             self.assertIsNone(call("Bash", command=cmd), cmd)
 
 

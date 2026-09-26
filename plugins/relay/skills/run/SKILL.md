@@ -17,7 +17,7 @@ Never complete, delete, reschedule, move, or edit the title or description of a 
 
 ## 1. Settings
 
-Read `~/.config/todoist-agent/config.toml` if it exists. Defaults for anything missing:
+Read `~/.config/relay/config.toml` if it exists (if only the old `~/.config/todoist-agent/config.toml` exists, read that instead). Defaults for anything missing:
 
 | Key | Default |
 |---|---|
@@ -26,7 +26,7 @@ Read `~/.config/todoist-agent/config.toml` if it exists. Defaults for anything m
 | `labels.working` | `claude-working` |
 | `folders.roots` | none (folders whose subfolders are projects, e.g. `~/Projects`) |
 | `folders.projects` | none (Todoist project name → work folder) |
-| `folders.workspace` | `~/todoist-agent` (git worktrees only) |
+| `folders.workspace` | `~/relay` (git worktrees only) |
 | `run.max_parallel` | `4` |
 | `run.model` | none (the worker's default: Opus, high effort) |
 | `context.about`, `context.sources` | empty |
@@ -70,7 +70,7 @@ Before starting, show one line per task: title → work folder → model.
 
 **Permissions:** workers inherit this session's working directory and permission mode. If a work folder is outside the current working directory, say so once: workers may stop on permission prompts, and a headless run fails. The fix is to start the run from the root folder (the parent of the project folders).
 
-Start one **`todoist-agent:worker`** subagent per task with the Agent tool. Put up to `run.max_parallel` Agent calls in a single message so they run in parallel, then do the next batch.
+Start one **`relay:worker`** subagent per task with the Agent tool. Put up to `run.max_parallel` Agent calls in a single message so they run in parallel, then do the next batch.
 
 - **Model:** if the description has a `**Model:**` line (`opus`, `sonnet`, `haiku`, or `fable`), pass it as the Agent `model`. Otherwise pass `run.model` if it's set. Otherwise leave `model` out, and the worker's default applies (Opus at high effort). Effort can't be set per task.
 - **Description:** `Todoist: <short title>`.
@@ -131,4 +131,4 @@ If a worker returns no RESULT block, crashes, or runs out of time, post a ❓ co
 
 ## 6. Report
 
-Finish with a short table: task · status (✅/🟡/❓) · one-line result · folder. Then one line: "Run `/todoist-agent:review` to go through them."
+Finish with a short table: task · status (✅/🟡/❓) · one-line result · folder. Then one line: "Run `/relay:review` to go through them."

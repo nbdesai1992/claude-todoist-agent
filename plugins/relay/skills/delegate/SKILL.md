@@ -1,6 +1,6 @@
 ---
 name: delegate
-description: Hand a piece of work to Claude through Todoist. Creates (or converts) a Todoist task in the delegation template and labels it for Claude, so the next /todoist-agent:run picks it up. Use when the user says to delegate something, "have Claude do this later", "queue this for Claude", "add this as a task for Claude", or wants an existing Todoist task handed to Claude.
+description: Hand a piece of work to Claude through Todoist. Creates (or converts) a Todoist task in the delegation template and labels it for Claude, so the next /relay:run picks it up. Use when the user says to delegate something, "have Claude do this later", "queue this for Claude", "add this as a task for Claude", or wants an existing Todoist task handed to Claude.
 argument-hint: "[what to delegate, or an existing task name/ID]"
 ---
 
@@ -10,7 +10,7 @@ Turn a request into a Todoist task that meets the delegation template, then give
 
 ## 1. Settings
 
-Read `~/.config/todoist-agent/config.toml` if it exists. You need `labels.claude` (default `claude`), `folders.roots` (folders whose subfolders are projects), and `folders.projects` (Todoist project name → work folder). If the file is missing, use the defaults.
+Read `~/.config/relay/config.toml` if it exists (if only the old `~/.config/todoist-agent/config.toml` exists, read that instead). You need `labels.claude` (default `claude`), `folders.roots` (folders whose subfolders are projects), and `folders.projects` (Todoist project name → work folder). If the file is missing, use the defaults.
 
 ## 2. Fill the template
 
@@ -48,4 +48,4 @@ Don't set `projectId`, `sectionId`, or `parentId` when updating an existing task
 
 ## 4. Confirm
 
-Reply in two or three lines: the task title with its link, its folder (say "new" if it doesn't exist yet), and "Run `/todoist-agent:run` to have Claude work the queue."
+Reply in two or three lines: the task title with its link, its folder (say "new" if it doesn't exist yet), and "Run `/relay:run` to have Claude work the queue."

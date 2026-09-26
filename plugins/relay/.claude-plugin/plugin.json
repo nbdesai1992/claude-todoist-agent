@@ -1,7 +1,7 @@
 {
-  "name": "todoist-agent",
+  "name": "relay",
   "displayName": "Relay",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Relay: delegate Todoist tasks to Claude. Label a task @claude, run the queue from Claude Code, and each task comes back as a comment for your review with the label switched to you. Workers can research and write code but never send, share, delete, or complete anything.",
   "author": { "name": "Neal Desai" },
   "license": "MIT",

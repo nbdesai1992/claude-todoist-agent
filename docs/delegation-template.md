@@ -23,7 +23,7 @@ When I ask you to delegate something to Claude, "queue it for Claude", or "have 
 
 **Goal** and **Done when** are required and must be specific. Without a **Folder**, the run hands the task back asking which folder, so include it when you know it. If you can't fill them in from what I've told you, ask me instead of creating the task. Don't add due dates unless I give one.
 
-Claude works the queue when I run `/todoist-agent:run`. The result comes back as a comment on the task, and the label switches to `human`.
+Claude works the queue when I run `/relay:run`. The result comes back as a comment on the task, and the label switches to `human`.
 
 ---
 

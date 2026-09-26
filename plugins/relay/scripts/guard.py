@@ -1,16 +1,17 @@
-"""PreToolUse guard for the todoist-agent worker subagent.
+"""PreToolUse guard for the Relay worker subagent.
 
 Claude Code tags tool calls made inside a subagent with `agent_type`. This hook only acts on
-calls from `todoist-agent:worker`; every other session and subagent passes through untouched.
+calls from `relay:worker`; every other session and subagent passes through untouched.
 
 For the worker, outside systems are read-only:
   * every Todoist tool is denied (the dispatcher owns Todoist),
   * an MCP tool is allowed only if its name is clearly a read (get, list, search, read...),
   * send/share/delete-style tools are denied even if allow-listed,
   * other writes (create, update, drafts...) are denied unless the user allows the tool in
-    ~/.config/todoist-agent/config.toml under [worker] allow_tools,
+    ~/.config/relay/config.toml under [worker] allow_tools (or the pre-0.5 path,
+    ~/.config/todoist-agent/config.toml, if only that one exists),
   * shell commands that push, publish, send, or discard work are denied,
-  * edits to Claude Code and todoist-agent settings are denied.
+  * edits to Claude Code and Relay settings (new and old paths) are denied.
 
 Deny decisions apply even in bypassPermissions mode. Runs on the system python3 (3.8+).
 """
@@ -21,8 +22,10 @@ import os
 import re
 import sys
 
-WORKER = "todoist-agent:worker"
-CONFIG = os.path.expanduser("~/.config/todoist-agent/config.toml")
+WORKER = "relay:worker"
+CONFIG = os.path.expanduser("~/.config/relay/config.toml")
+# Pre-0.5 location (the plugin was called todoist-agent). Read only if CONFIG is missing.
+LEGACY_CONFIG = os.path.expanduser("~/.config/todoist-agent/config.toml")
 
 # Never allowed, even for allow-listed tools.
 HARD_VERBS = {
@@ -64,7 +67,8 @@ BASH_DENY = [
     (r"\brm\s+(-\S*\s+)*(/|~|~/|\$HOME|\$HOME/|\.\.|\.\./?)(\s|$)", "rm of a top-level folder"),
 ]
 
-PROTECTED_PATHS = [os.path.expanduser("~/.claude/"), os.path.expanduser("~/.config/todoist-agent/")]
+PROTECTED_PATHS = [os.path.expanduser("~/.claude/"), os.path.expanduser("~/.config/relay/"),
+                   os.path.expanduser("~/.config/todoist-agent/")]
 
 
 def words(name: str) -> set[str]:
@@ -73,10 +77,17 @@ def words(name: str) -> set[str]:
     return {w.lower() for w in re.split(r"[^A-Za-z0-9]+", name) if w}
 
 
+def config_path() -> str:
+    """The new config path, or the legacy one if only that exists."""
+    if not os.path.exists(CONFIG) and os.path.exists(LEGACY_CONFIG):
+        return LEGACY_CONFIG
+    return CONFIG
+
+
 def allow_list() -> list[str]:
     try:
         import tomllib  # Python 3.11+
-        with open(CONFIG, "rb") as f:
+        with open(config_path(), "rb") as f:
             return list(tomllib.load(f).get("worker", {}).get("allow_tools", []))
     except Exception:
         return []
@@ -120,7 +131,7 @@ def check_path(path: str) -> str | None:
     full = os.path.abspath(os.path.expanduser(path))
     for protected in PROTECTED_PATHS:
         if full.startswith(protected):
-            return "The worker can't change Claude Code or todoist-agent settings."
+            return "The worker can't change Claude Code or Relay settings."
     return None
 
 
@@ -151,7 +162,7 @@ def main() -> None:
         print(json.dumps({"hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
-            "permissionDecisionReason": "todoist-agent guard: " + reason,
+            "permissionDecisionReason": "relay guard: " + reason,
         }}))
 
 

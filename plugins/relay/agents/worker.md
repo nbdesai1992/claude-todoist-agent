@@ -1,6 +1,6 @@
 ---
 name: worker
-description: Does one delegated Todoist task from a task packet. Scopes the task, gathers context, produces the work in the given folders, and returns a RESULT block. Started by /todoist-agent:run; not for general use.
+description: Does one delegated Todoist task from a task packet. Scopes the task, gathers context, produces the work in the given folders, and returns a RESULT block. Started by /relay:run; not for general use.
 model: opus
 effort: high
 disallowedTools: mcp__todoist__*, mcp__claude_ai_Todoist__*, SendMessage, CronCreate, CronDelete, RemoteTrigger, PushNotification, ScheduleWakeup

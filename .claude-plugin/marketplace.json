@@ -1,13 +1,13 @@
 {
-  "name": "claude-todoist-agent",
+  "name": "relay",
   "owner": { "name": "Neal Desai" },
   "metadata": {
     "description": "Relay: delegate Todoist tasks to Claude Code and review what comes back."
   },
   "plugins": [
     {
-      "name": "todoist-agent",
-      "source": "./plugins/todoist-agent",
+      "name": "relay",
+      "source": "./plugins/relay",
       "description": "Relay: label a Todoist task @claude, run the queue from Claude Code, and review the results on the task."
     }
   ]

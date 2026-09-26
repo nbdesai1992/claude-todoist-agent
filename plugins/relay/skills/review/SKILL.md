@@ -10,7 +10,7 @@ Go through the tasks Claude handed back, one at a time. The user decides what ha
 
 ## 1. Collect
 
-- Read `~/.config/todoist-agent/config.toml` for `labels.claude` (default `claude`) and `labels.human` (default `human`).
+- Read `~/.config/relay/config.toml` (if only the old `~/.config/todoist-agent/config.toml` exists, read that instead) for `labels.claude` (default `claude`) and `labels.human` (default `human`).
 - Todoist `find-tasks` with `labels: [<human label>]` and `limit: 100`. If `$ARGUMENTS` names a task, keep only that one.
 - For each task, `find-comments` (follow the `cursor`). The latest comment starting with `🤖 Claude` is the result. Tasks with no Claude comment are the user's own to-dos: skip them and report only how many you skipped.
 
@@ -39,4 +39,4 @@ Never delete tasks or comments. Never change a task's title, description, date, 
 
 ## 4. Wrap up
 
-One line per task with what happened. If anything was sent back, ask whether to run `/todoist-agent:run` now.
+One line per task with what happened. If anything was sent back, ask whether to run `/relay:run` now.
