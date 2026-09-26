@@ -1,0 +1,14 @@
+{
+  "name": "claude-todoist-agent",
+  "owner": { "name": "Neal Desai" },
+  "metadata": {
+    "description": "Delegate Todoist tasks to Claude Code and review what comes back."
+  },
+  "plugins": [
+    {
+      "name": "todoist-agent",
+      "source": "./plugins/todoist-agent",
+      "description": "Label a Todoist task @claude, run the queue from Claude Code, and review the results on the task."
+    }
+  ]
+}
